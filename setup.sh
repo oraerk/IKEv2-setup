@@ -4,6 +4,9 @@
 # Copyright (c) 2015 – 2021 George MacKerron
 # Released under the MIT licence: http://opensource.org/licenses/mit-license
 
+echo -e "PLEASE USE ORIGINAL https://github.com/jawj/IKEv2-setup\nThis fork is heavily mangled"
+exit 1
+
 echo
 echo "=== https://github.com/jawj/IKEv2-setup ==="
 echo

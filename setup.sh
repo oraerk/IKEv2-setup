@@ -21,8 +21,8 @@ function exit_badly {
 echo "--- Adding repositories and installing utilities ---"
 echo
 
-apt-get update
-apt-get install software-properties-common
+#apt-get update
+#apt-get install software-properties-common
 apt-get install moreutils dnsutils
 
 

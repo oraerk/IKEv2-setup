@@ -175,12 +175,12 @@ ln -f -s "/etc/letsencrypt/live/${VPNHOST}/cert.pem"    /etc/ipsec.d/certs/cert.
 ln -f -s "/etc/letsencrypt/live/${VPNHOST}/privkey.pem" /etc/ipsec.d/private/privkey.pem
 ln -f -s "/etc/letsencrypt/live/${VPNHOST}/chain.pem"   /etc/ipsec.d/cacerts/chain.pem
 
-#grep -Fq 'jawj/IKEv2-setup' /etc/apparmor.d/local/usr.lib.ipsec.charon || echo "
-## https://github.com/jawj/IKEv2-setup
-#/etc/letsencrypt/archive/${VPNHOST}/* r,
-#" >> /etc/apparmor.d/local/usr.lib.ipsec.charon
+grep -Fq 'jawj/IKEv2-setup' /etc/apparmor.d/local/usr.lib.ipsec.charon || echo "
+# https://github.com/jawj/IKEv2-setup
+/etc/letsencrypt/archive/${VPNHOST}/* r,
+" >> /etc/apparmor.d/local/usr.lib.ipsec.charon
 
-#aa-status --enabled && invoke-rc.d apparmor reload
+aa-status --enabled && invoke-rc.d apparmor reload
 
 
 echo

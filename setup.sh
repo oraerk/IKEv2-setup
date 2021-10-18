@@ -83,7 +83,7 @@ echo "--- Configuration: general server settings ---"
 echo
 
 VPNIPPOOL="10.101.0.0/16"
-
+read -r -p "Email address for sysadmin (e.g. j.bloggs@example.com): " EMAILADDR
 
 echo
 echo "--- Upgrading and installing packages ---"

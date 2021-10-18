@@ -74,8 +74,9 @@ Public DNS servers include:
 77.88.8.7,77.88.8.3              Yandex Family         https://dns.yandex.com
 '
 
-read -r -p "DNS servers for VPN users (default: 1.1.1.1,1.0.0.1): " VPNDNS
-VPNDNS=${VPNDNS:-'1.1.1.1,1.0.0.1'}
+#read -r -p "DNS servers for VPN users (default: 1.1.1.1,1.0.0.1): " VPNDNS
+#VPNDNS=${VPNDNS:-'1.1.1.1,1.0.0.1'}
+VPNDNS='1.1.1.1,1.0.0.1'
 
 
 echo

@@ -361,11 +361,6 @@ cat << EOF > vpn-ios-or-mac.mobileconfig
 </plist>
 EOF
 
-grep -Fq 'jawj/IKEv2-setup' /etc/mime.types || echo "
-# https://github.com/jawj/IKEv2-setup
-application/vnd.strongswan.profile sswan
-" >> /etc/mime.types
-
 cat << EOF > vpn-android.sswan
 {
   "uuid": "$(uuidgen)",
@@ -492,7 +487,7 @@ A bash script to set up strongSwan as a VPN client is attached as vpn-ubuntu-cli
 
 EOF
 
-EMAIL=$USER@$VPNHOST mutt -s "VPN configuration" -a vpn-ios-or-mac.mobileconfig vpn-android.sswan vpn-ubuntu-client.sh -- "${EMAILADDR}" < vpn-instructions.txt
+# EMAIL=$USER@$VPNHOST mutt -s "VPN configuration" -a vpn-ios-or-mac.mobileconfig vpn-android.sswan vpn-ubuntu-client.sh -- "${EMAILADDR}" < vpn-instructions.txt
 
 echo
 echo "--- How to connect ---"

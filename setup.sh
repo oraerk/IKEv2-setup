@@ -21,17 +21,9 @@ function exit_badly {
 echo "--- Adding repositories and installing utilities ---"
 echo
 
-export DEBIAN_FRONTEND=noninteractive
-
-# see https://github.com/jawj/IKEv2-setup/issues/66 and https://bugs.launchpad.net/subiquity/+bug/1783129
-# note: software-properties-common is required for add-apt-repository
-apt-get -o Acquire::ForceIPv4=true update
-apt-get -o Acquire::ForceIPv4=true install -y software-properties-common
-add-apt-repository universe
-add-apt-repository restricted
-add-apt-repository multiverse
-
-apt-get -o Acquire::ForceIPv4=true install -y moreutils dnsutils
+apt-get update
+apt-get install software-properties-common
+apt-get install moreutils dnsutils
 
 
 echo
@@ -90,36 +82,6 @@ echo
 echo "--- Configuration: general server settings ---"
 echo
 
-read -r -p "Timezone (default: Europe/London): " TZONE
-TZONE=${TZONE:-'Europe/London'}
-
-read -r -p "Email address for sysadmin (e.g. j.bloggs@example.com): " EMAILADDR
-
-read -r -p "Desired SSH log-in port (default: 22): " SSHPORT
-SSHPORT=${SSHPORT:-22}
-
-read -r -p "New SSH log-in user name: " LOGINUSERNAME
-
-CERTLOGIN="n"
-if [[ -s /root/.ssh/authorized_keys ]]; then
-  while true; do
-    read -r -p "Copy /root/.ssh/authorized_keys to new user and disable SSH password log-in [Y/n]? " CERTLOGIN
-    [[ ${CERTLOGIN,,} =~ ^(y(es)?)?$ ]] && CERTLOGIN=y
-    [[ ${CERTLOGIN,,} =~ ^no?$ ]] && CERTLOGIN=n
-    [[ $CERTLOGIN =~ ^(y|n)$ ]] && break
-  done
-fi
-
-while true; do
-  [[ ${CERTLOGIN} = "y" ]] && read -r -s -p "New SSH user's password (e.g. for sudo): " LOGINPASSWORD
-  [[ ${CERTLOGIN} != "y" ]] && read -r -s -p "New SSH user's log-in password (must be REALLY STRONG): " LOGINPASSWORD
-  echo
-  read -r -s -p "Confirm new SSH user's password: " LOGINPASSWORD2
-  echo
-  [[ "${LOGINPASSWORD}" = "${LOGINPASSWORD2}" ]] && break
-  echo "Passwords didn't match -- please try again"
-done
-
 VPNIPPOOL="10.101.0.0/16"
 
 
@@ -127,13 +89,7 @@ echo
 echo "--- Upgrading and installing packages ---"
 echo
 
-apt-get -o Acquire::ForceIPv4=true --with-new-pkgs upgrade -y
-apt autoremove -y
-
-debconf-set-selections <<< "postfix postfix/mailname string ${VPNHOST}"
-debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
-
-apt-get -o Acquire::ForceIPv4=true install -y language-pack-en strongswan libstrongswan-standard-plugins strongswan-libcharon libcharon-standard-plugins libcharon-extra-plugins  iptables-persistent postfix mutt unattended-upgrades certbot uuid-runtime
+apt-get install strongswan libstrongswan-standard-plugins strongswan-libcharon libcharon-standard-plugins libcharon-extra-plugins  iptables-persistent certbot 
 
 
 echo
@@ -145,18 +101,19 @@ echo
 # https://wiki.strongswan.org/projects/strongswan/wiki/ForwardingAndSplitTunneling
 # https://www.zeitgeist.se/2013/11/26/mtu-woes-in-ipsec-tunnels-how-to-fix/
 
-iptables -P INPUT   ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT  ACCEPT
+echo "check on ocloud, probably not needed"
+#iptables -P INPUT   ACCEPT
+#iptables -P FORWARD ACCEPT
+#iptables -P OUTPUT  ACCEPT
 
-iptables -F
-iptables -t nat -F
-iptables -t mangle -F
+#iptables -F
+#iptables -t nat -F
+#iptables -t mangle -F
 
 # INPUT
 
 # accept anything already accepted
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+#iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # accept anything on the loopback interface
 iptables -A INPUT -i lo -j ACCEPT
@@ -169,7 +126,7 @@ iptables -I INPUT -i "${ETH0ORSIMILAR}" -m state --state NEW -m recent --set
 iptables -I INPUT -i "${ETH0ORSIMILAR}" -m state --state NEW -m recent --update --seconds 300 --hitcount 60 -j DROP
 
 # accept (non-standard) SSH
-iptables -A INPUT -p tcp --dport "${SSHPORT}" -j ACCEPT
+#iptables -A INPUT -p tcp --dport "${SSHPORT}" -j ACCEPT
 
 
 # VPN
@@ -182,8 +139,8 @@ iptables -A INPUT -p udp --dport 4500 -j ACCEPT
 iptables -A FORWARD --match policy --pol ipsec --dir in  --proto esp -s "${VPNIPPOOL}" -j ACCEPT
 iptables -A FORWARD --match policy --pol ipsec --dir out --proto esp -d "${VPNIPPOOL}" -j ACCEPT
 
-# reduce MTU/MSS values for dumb VPN clients
-iptables -t mangle -A FORWARD --match policy --pol ipsec --dir in -s "${VPNIPPOOL}" -o "${ETH0ORSIMILAR}" -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360
+echo "reduce MTU/MSS values for dumb VPN clients \ check if needed"
+echo iptables -t mangle -A FORWARD --match policy --pol ipsec --dir in -s "${VPNIPPOOL}" -o "${ETH0ORSIMILAR}" -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1361:1536 -j TCPMSS --set-mss 1360
 
 # masquerade VPN traffic over eth0 etc.
 iptables -t nat -A POSTROUTING -s "${VPNIPPOOL}" -o "${ETH0ORSIMILAR}" -m policy --pol ipsec --dir out -j ACCEPT  # exempt IPsec traffic from masquerading
@@ -192,8 +149,8 @@ iptables -t nat -A POSTROUTING -s "${VPNIPPOOL}" -o "${ETH0ORSIMILAR}" -j MASQUE
 
 # fall through to drop any other input and forward traffic
 
-iptables -A INPUT   -j DROP
-iptables -A FORWARD -j DROP
+#iptables -A INPUT   -j DROP
+#iptables -A FORWARD -j DROP
 
 iptables -L
 
